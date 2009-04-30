@@ -436,8 +436,8 @@ void integer_mult(integer_t *i1, integer_t *i2, integer_t *prod_r) {
 // {{{ void integer_div_approx(integer_t *i1, integer_t *i2, WORD *w_r, size_t *shift_r) {
 void integer_div_approx(integer_t *i1, integer_t *i2, WORD *w_r, size_t *shift_r) {
 } // }}}
-// {{{ void integer_div(integer_t *i1, integer_t *i2, integer_t *quot_r, integer_t *rem_r) {
-void integer_div(integer_t *i1, integer_t *i2, integer_t *quot_r, integer_t *rem_r) {
+// {{{ void integer_div2(integer_t *i1, integer_t *i2, integer_t *quot_r, integer_t *rem_r) {
+void integer_div2(integer_t *i1, integer_t *i2, integer_t *quot_r, integer_t *rem_r) {
 
 	WORD w;
 	size_t shift;
@@ -459,6 +459,20 @@ void integer_div(integer_t *i1, integer_t *i2, integer_t *quot_r, integer_t *rem
 
 
 	}*/
+
+} // }}}
+// {{{ void integer_div(integer_t *i1, integer_t *i2, integer_t *quot_r, integer_t *rem_r) {
+void integer_div(integer_t *i1, integer_t *i2, integer_t *quot_r, integer_t *rem_r) {
+
+	WORD w;
+	size_t shift;
+
+	integer_zero(quot_r);
+	integer_copy(rem_r, i1);
+	
+	while (integer_cmp(rem_r, i2) >= 0) {
+		break;
+	}
 
 } // }}}
 
@@ -534,3 +548,5 @@ void integer_mult_word_add(integer_t *i, WORD w, size_t shift, integer_t *acc_r)
 // {{{ void integer_mult_word_sub(integer_t *i, WORD w, size_t shift, integer_t *acc_r) {
 void integer_mult_word_sub(integer_t *i, WORD w, size_t shift, integer_t *acc_r) {
 } // }}}
+
+// vim: fdm=marker ts=4

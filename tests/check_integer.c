@@ -322,6 +322,33 @@ START_TEST(test_integer_mult_neg)
 
 }
 END_TEST // }}}
+// {{{ START_TEST(test_integer_div_remainder_only)
+START_TEST(test_integer_div_remainder_only)
+{
+
+	integer_t *i1, *i2, *quot, *rem;
+	char *s;
+
+	i1 = integer_new_from_hex("0x1234567890");
+	i2 = integer_new_from_hex("0xfedcba09876");
+	quot = integer_new_zero();
+	rem = integer_new_zero();
+	integer_div(i1, i2, quot, rem);
+	s = integer_to_hex_string(quot);
+	fail_unless(strcmp(s, "0x0") == 0);
+	free(s);
+
+	s = integer_to_hex_string(rem);
+	fail_unless(strcmp(s, "0x1234567890") == 0);
+
+	free(s);
+	integer_free(i1);
+	integer_free(i2);
+	integer_free(quot);
+	integer_free(rem);
+
+}
+END_TEST // }}}
 // {{{ START_TEST(test_integer_div)
 START_TEST(test_integer_div)
 {
@@ -397,6 +424,7 @@ Suite *integer_suite() {
 	tcase_add_test(tc_core, test_integer_sub_neg);
 	tcase_add_test(tc_core, test_integer_mult);
 	tcase_add_test(tc_core, test_integer_mult_neg);
+	tcase_add_test(tc_core, test_integer_div_remainder_only);
 	tcase_add_test(tc_core, test_integer_div);
 	tcase_add_test(tc_core, test_integer_zero);
 	tcase_add_test(tc_core, test_integer_copy);
@@ -416,3 +444,5 @@ int main (void)
 	srunner_free(sr);
 	return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 } // }}}
+
+// vim: fdm=marker ts=4
