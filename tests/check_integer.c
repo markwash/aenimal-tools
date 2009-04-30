@@ -349,6 +349,33 @@ START_TEST(test_integer_div_remainder_only)
 
 }
 END_TEST // }}}
+// {{{ START_TEST(test_integer_div_word_size)
+START_TEST(test_integer_div_word_size)
+{
+
+	integer_t *i1, *i2, *quot, *rem;
+	char *s;
+
+	i1 = integer_new_from_hex("0x8f");
+	i2 = integer_new_from_hex("0x10");
+	quot = integer_new_zero();
+	rem = integer_new_zero();
+	integer_div(i1, i2, quot, rem);
+	s = integer_to_hex_string(quot);
+	fail_unless(strcmp(s, "0x8") == 0);
+	free(s);
+
+	s = integer_to_hex_string(rem);
+	fail_unless(strcmp(s, "0xf") == 0);
+
+	free(s);
+	integer_free(i1);
+	integer_free(i2);
+	integer_free(quot);
+	integer_free(rem);
+
+}
+END_TEST // }}}
 // {{{ START_TEST(test_integer_div)
 START_TEST(test_integer_div)
 {
@@ -425,6 +452,7 @@ Suite *integer_suite() {
 	tcase_add_test(tc_core, test_integer_mult);
 	tcase_add_test(tc_core, test_integer_mult_neg);
 	tcase_add_test(tc_core, test_integer_div_remainder_only);
+	tcase_add_test(tc_core, test_integer_div_word_size);
 	tcase_add_test(tc_core, test_integer_div);
 	tcase_add_test(tc_core, test_integer_zero);
 	tcase_add_test(tc_core, test_integer_copy);
