@@ -152,6 +152,12 @@ void integer_zero(integer_t *i) {
 	WORD w = 0;
 	simple_vector_append(i->digits, &w);
 } // }}}
+// {{{ static void integer_get_word(integer_t *i, WORD w) {
+static void integer_get_word(integer_t *i, WORD w) {
+	integer_clear(i);
+	i->positive = 1;
+	simple_vector_append(i->digits, &w);
+} // }}}
 
 // {{{ char *integer_to_hex_string(integer_t *i) {
 char *integer_to_hex_string(integer_t *i) {
@@ -464,14 +470,18 @@ void integer_div2(integer_t *i1, integer_t *i2, integer_t *quot_r, integer_t *re
 // {{{ void integer_div(integer_t *i1, integer_t *i2, integer_t *quot_r, integer_t *rem_r) {
 void integer_div(integer_t *i1, integer_t *i2, integer_t *quot_r, integer_t *rem_r) {
 
-	WORD w;
-	size_t shift;
+	WORD w1, w2, wq, wr;
 
 	integer_zero(quot_r);
 	integer_copy(rem_r, i1);
 	
-	while (integer_cmp(rem_r, i2) >= 0) {
-		break;
+	if (integer_cmp(rem_r, i2) >= 0) {
+		simple_vector_get(i1->digits, 0, &w1);
+		simple_vector_get(i2->digits, 0, &w2);
+		wq = w1 / w2;
+		wr = w1 % w2;
+		integer_get_word(quot_r, wq);
+		integer_get_word(rem_r, wr);
 	}
 
 } // }}}
