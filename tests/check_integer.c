@@ -448,13 +448,25 @@ START_TEST(test_integer_set_word)
 	free(s);
 }
 END_TEST // }}}
+// {{{ START_TEST(test_integer_new_from_word)
+START_TEST(test_integer_new_from_word)
+{
+	integer_t *i;
+	i = integer_new_from_word(0xfe, 5);
+	char *s;
+	s = integer_to_hex_string(i);
+	fail_unless(strcmp(s, "0xff00000000") == 0, NULL);
+	integer_free(i);
+	free(s);
+}
+END_TEST // }}}
 
 // {{{ Suite *integer_suite() {
 Suite *integer_suite() {
 	
 	Suite *s = suite_create("Integer");
 
-	// Core test case
+	// {{{ Core test case
 	TCase *tc_core = tcase_create("Core");
 	tcase_add_test(tc_core, test_integer_new_zero);
 	tcase_add_test(tc_core, test_integer_new_from_hex);
@@ -474,11 +486,14 @@ Suite *integer_suite() {
 	tcase_add_test(tc_core, test_integer_zero);
 	tcase_add_test(tc_core, test_integer_copy);
 	suite_add_tcase(s, tc_core);
+	// }}}
 
-	// Private test case
+	// {{{ Private test case
 	TCase *tc_private = tcase_create("Private");
 	tcase_add_test(tc_private, test_integer_set_word);
+	tcase_add_test(tc_private, test_integer_new_from_word);
 	suite_add_tcase(s, tc_private);
+	// }}}
 	
 	return s;
 } // }}}
