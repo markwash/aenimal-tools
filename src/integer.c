@@ -550,11 +550,11 @@ void integer_accumulate_word(integer_t *i, WORD w, size_t shift) {
 		// add leading zeroes, if any
 		iw = 0;
 		for (digit = digits; digit < shift; digit++) {
-			simple_vector_append(i, &iw);
+			simple_vector_append(i->digits, &iw);
 		}
 	
 		// add w as most significant digit
-		simple_vector_append(i, &w);
+		simple_vector_append(i->digits, &w);
 	}
 
 } // }}}
