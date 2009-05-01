@@ -1,4 +1,5 @@
 #include "integer.h"
+#include "integer-private.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -157,6 +158,16 @@ static void integer_get_word(integer_t *i, WORD w) {
 	integer_clear(i);
 	i->positive = 1;
 	simple_vector_append(i->digits, &w);
+} // }}}
+// {{{ void integer_set_word(integer_t *i, size_t digit, WORD w) {
+void integer_set_word(integer_t *i, size_t digit, WORD w) {
+	size_t idigits = integer_num_digits(i);
+	ssize_t d;
+	WORD zero = 0;
+	for (d = idigits; d <= digit; d++) {
+		simple_vector_append(i->digits, &zero);
+	}
+	simple_vector_put(i->digits, digit, &w);
 } // }}}
 
 // {{{ char *integer_to_hex_string(integer_t *i) {

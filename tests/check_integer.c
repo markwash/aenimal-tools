@@ -5,7 +5,7 @@
 
 #include "../src/integer.h"
 
-
+// Core test cases
 // {{{ START_TEST(test_integer_new_zero)
 START_TEST(test_integer_new_zero)
 {
@@ -432,6 +432,23 @@ START_TEST(test_integer_copy)
 }
 END_TEST // }}}
 
+#include "../src/integer-private.h"
+
+// Private test cases
+// {{{ START_TEST(test_integer_set_word)
+START_TEST(test_integer_set_word)
+{
+	integer_t *i;
+	i = integer_new_zero();
+	integer_set_word(i, 0, 0xff);
+	char *s;
+	s = integer_to_hex_string(i);
+	fail_unless(strcmp(s, "0xff") == 0, NULL);
+	integer_free(i);
+	free(s);
+}
+END_TEST // }}}
+
 // {{{ Suite *integer_suite() {
 Suite *integer_suite() {
 	
@@ -457,6 +474,11 @@ Suite *integer_suite() {
 	tcase_add_test(tc_core, test_integer_zero);
 	tcase_add_test(tc_core, test_integer_copy);
 	suite_add_tcase(s, tc_core);
+
+	// Private test case
+	TCase *tc_private = tcase_create("Private");
+	tcase_add_test(tc_private, test_integer_set_word);
+	suite_add_tcase(s, tc_private);
 	
 	return s;
 } // }}}
