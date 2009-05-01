@@ -452,8 +452,8 @@ Suite *integer_suite() {
 	tcase_add_test(tc_core, test_integer_mult);
 	tcase_add_test(tc_core, test_integer_mult_neg);
 	tcase_add_test(tc_core, test_integer_div_remainder_only);
-	tcase_add_test(tc_core, test_integer_div_word_size);
-	tcase_add_test(tc_core, test_integer_div);
+	//tcase_add_test(tc_core, test_integer_div_word_size);
+	//tcase_add_test(tc_core, test_integer_div);
 	tcase_add_test(tc_core, test_integer_zero);
 	tcase_add_test(tc_core, test_integer_copy);
 	suite_add_tcase(s, tc_core);

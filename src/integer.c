@@ -470,24 +470,82 @@ void integer_div2(integer_t *i1, integer_t *i2, integer_t *quot_r, integer_t *re
 // {{{ void integer_div(integer_t *i1, integer_t *i2, integer_t *quot_r, integer_t *rem_r) {
 void integer_div(integer_t *i1, integer_t *i2, integer_t *quot_r, integer_t *rem_r) {
 
-	WORD w1, w2, wq, wr;
+	WORD w2, wq, wr;
+	DWORD dw2, dwr, dwq;
+	size_t n2, nr;
+
+	n2 = integer_num_digits(i2);
+	simple_vector_get(i2->digits, n2 - 1, &w2);
 
 	integer_zero(quot_r);
 	integer_copy(rem_r, i1);
 	
-	if (integer_cmp(rem_r, i2) >= 0) {
-		simple_vector_get(i1->digits, 0, &w1);
-		simple_vector_get(i2->digits, 0, &w2);
-		wq = w1 / w2;
-		wr = w1 % w2;
-		integer_get_word(quot_r, wq);
-		integer_get_word(rem_r, wr);
+	while (integer_cmp(rem_r, i2) >= 0) {
+
+		nr = integer_num_digits(rem_r);
+		simple_vector_get(rem_r->digits, nr - 1, &wr);
+
+		// approximate quotient for this remaining part of i1
+		if (w2 <= wr) {
+			wq = wr / w2;
+		} else {
+			dwr = wr << (sizeof(WORD) * 8);
+			nr--;
+			simple_vector_get(rem_r->digits, nr - 1, &wr);
+			dwr += wr;
+			wq = (WORD) (dwr / (DWORD) wq);
+		}
+		
+		// calculate real remainder for this approximate quotient
+		integer_mult_word_sub(i1, wq, nr - n2, rem_r);
+
+		// if we overshot, correct
+		if (!rem_r->positive) {
+			integer_mult_word_add(i1, 1, nr - n2, rem_r);
+			wq--;
+		}
+
+		// accumulate the quotient
+		integer_accumulate_word(quot_r, wq, nr - n2);
+
 	}
 
 } // }}}
 
 // {{{ void integer_accumulate_word(integer_t *i, WORD w, size_t shift) {
 void integer_accumulate_word(integer_t *i, WORD w, size_t shift) {
+
+	size_t digits = integer_num_digits(i);
+	DWORD dw;
+	WORD iw, carry;
+
+	// Add with carry starting in the middle of i (if necessary)
+	while (w > 0 && shift < digits) {
+
+		simple_vector_get(i->digits, shift, &iw);
+	
+		dw = (DWORD) iw + (DWORD) w;
+		iw = dw & MAX_WORD;
+		carry = dw >> (sizeof(WORD) * 8);
+
+		shift++;
+		w = carry;
+	}
+
+	// Add beyond the most significant digits of i
+	if (w > 0) {
+		ssize_t digit;
+
+		// add leading zeroes, if any
+		iw = 0;
+		for (digit = digits; digit < shift; digit++) {
+			simple_vector_append(i, &iw);
+		}
+	
+		// add w as most significant digit
+		simple_vector_append(i, &w);
+	}
+
 } // }}}
 // {{{ void integer_mult_word_add(integer_t *i, WORD w, size_t shift, integer_t *acc_r) {
 void integer_mult_word_add(integer_t *i, WORD w, size_t shift, integer_t *acc_r) {
@@ -557,6 +615,69 @@ void integer_mult_word_add(integer_t *i, WORD w, size_t shift, integer_t *acc_r)
 } // }}}
 // {{{ void integer_mult_word_sub(integer_t *i, WORD w, size_t shift, integer_t *acc_r) {
 void integer_mult_word_sub(integer_t *i, WORD w, size_t shift, integer_t *acc_r) {
+
+	// assumes w * (MAX_WORD + 1) ^ shift < i
+
+	// create temporary variable
+	integer_t *temp;
+	temp = integer_new_zero();
+
+	// insert trailing zeroes
+	ssize_t digit;
+	WORD tw = 0;
+	for (digit = 0; digit < shift; digit++) {
+		simple_vector_append(temp->digits, &tw);
+	}
+
+	// perform multiplication digit by digit
+	size_t idigits = integer_num_digits(i);
+	DWORD dw;
+	WORD iw, carry = 0;
+	for (digit = 0; digit < idigits; digit++) {
+		simple_vector_get(i->digits, digit, &iw);
+		dw = (DWORD) w * (DWORD) iw + (DWORD) carry;
+		tw = dw & MAX_WORD;
+		carry = dw >> (sizeof(WORD) * 8);
+		simple_vector_append(temp->digits, &tw);
+	}
+
+	// append carry if necessary
+	if (carry > 0) {
+		simple_vector_append(temp->digits, &carry);
+	}
+
+	// subtract temp from accumulator
+	WORD w1, w2, w3;
+	size_t adigits = integer_num_digits(acc_r);
+	size_t tdigits = integer_num_digits(temp);
+	int skipped_zeros = 0;
+	for (digit = 0; digit < adigits; digit += 1) {
+		simple_vector_get(acc_r->digits, digit, &w1);
+		if (digit < tdigits) {
+			simple_vector_get(temp->digits, digit, &w2);
+		} else {
+			w2 = 0;
+		}
+		dw = (DWORD) w1 - (DWORD) w2 - (DWORD) carry;
+		if (dw > (DWORD) w1) {
+			carry = 1;
+		} else {
+			carry = 0;
+		}
+		w3 = dw & MAX_WORD;
+		if (w3 == 0) {
+			skipped_zeros += 1;
+		} else {
+			w1 = 0;
+			for ( ; skipped_zeros > 0; skipped_zeros -= 1) {
+				simple_vector_append(acc_r->digits, &w1);
+			}
+			simple_vector_append(acc_r->digits, &w3);
+		}
+	}
+
+	// there really shouldn't be anything in carry
+
 } // }}}
 
 // vim: fdm=marker ts=4
