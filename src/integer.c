@@ -30,13 +30,13 @@ static int8_t convert_ascii_hex_to_number(char c) {
 	}
 
 } // }}}
-// {{{ static integer_num_digits(integer_t *i) {
-static integer_num_digits(integer_t *i) {
+// {{{ size_t integer_num_digits(integer_t *i) {
+size_t integer_num_digits(integer_t *i) {
 	return simple_vector_size(i->digits);
 } // }}}
 
-// {{{ static integer_t *integer_new() {
-static integer_t *integer_new() {
+// {{{ integer_t *integer_new() {
+integer_t *integer_new() {
 
 	integer_t *i;
 	
@@ -63,10 +63,7 @@ integer_t *integer_new_zero() {
 		return NULL;
 	}
 
-	i->positive = 1;
-
-	WORD w = 0;
-	simple_vector_put(i->digits, 0, &w);
+	integer_zero(i);
 	return i;
 
 } // }}}
@@ -123,6 +120,7 @@ integer_t *integer_new_from_hex(const char *str) {
 		}
 
 		// add this word to our digits
+		// FIXME: switch this from simple_vector_append to integer_word_power
 		if (simple_vector_append(i->digits, &w) < 0) {
 			integer_free(i);
 			return NULL;
@@ -133,6 +131,15 @@ integer_t *integer_new_from_hex(const char *str) {
 	return i;
 
 } // }}}
+// {{{ integer_t *integer_new_word_power(WORD w, size_t shift) {
+integer_t *integer_new_word_power(WORD w, size_t shift) {
+	integer_t *i;
+	if ((i = integer_new()) == NULL) {
+		return NULL;
+	}
+	integer_word_power(i, shift, w);
+	return i;
+} // }}}
 // {{{ void integer_free(integer_t *i) {
 void integer_free(integer_t *i) {
 	if (i != NULL) {
@@ -140,8 +147,8 @@ void integer_free(integer_t *i) {
 		free(i);
 	}
 } // }}}
-// {{{ static void integer_clear(integer_t *i) {
-static void integer_clear(integer_t *i) {
+// {{{ void integer_clear(integer_t *i) {
+void integer_clear(integer_t *i) {
 
 	simple_vector_clear(i->digits);
 
@@ -150,8 +157,7 @@ static void integer_clear(integer_t *i) {
 void integer_zero(integer_t *i) {
 	integer_clear(i);
 	i->positive = 1;
-	WORD w = 0;
-	simple_vector_append(i->digits, &w);
+	integer_word_power(i, 0, 0);
 } // }}}
 // {{{ static void integer_get_word(integer_t *i, WORD w) {
 static void integer_get_word(integer_t *i, WORD w) {
@@ -159,8 +165,8 @@ static void integer_get_word(integer_t *i, WORD w) {
 	i->positive = 1;
 	simple_vector_append(i->digits, &w);
 } // }}}
-// {{{ void integer_set_word(integer_t *i, size_t digit, WORD w) {
-void integer_set_word(integer_t *i, size_t digit, WORD w) {
+// {{{ void integer_word_power(integer_t *i, size_t digit, WORD w) {
+void integer_word_power(integer_t *i, size_t digit, WORD w) {
 	size_t idigits = integer_num_digits(i);
 	ssize_t d;
 	WORD zero = 0;

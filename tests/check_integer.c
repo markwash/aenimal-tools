@@ -435,12 +435,12 @@ END_TEST // }}}
 #include "../src/integer-private.h"
 
 // Private test cases
-// {{{ START_TEST(test_integer_set_word)
-START_TEST(test_integer_set_word)
+// {{{ START_TEST(test_integer_word)
+START_TEST(test_integer_word)
 {
 	integer_t *i;
 	i = integer_new_zero();
-	integer_set_word(i, 0, 0xff);
+	integer_word_power(i, 0, 0xff);
 	char *s;
 	s = integer_to_hex_string(i);
 	fail_unless(strcmp(s, "0xff") == 0, NULL);
@@ -448,14 +448,14 @@ START_TEST(test_integer_set_word)
 	free(s);
 }
 END_TEST // }}}
-// {{{ START_TEST(test_integer_new_from_word)
-START_TEST(test_integer_new_from_word)
+// {{{ START_TEST(test_integer_new_word_power)
+START_TEST(test_integer_new_word_power)
 {
 	integer_t *i;
-	i = integer_new_from_word(0xfe, 5);
+	i = integer_new_word_power(0xfe, 1);
 	char *s;
 	s = integer_to_hex_string(i);
-	fail_unless(strcmp(s, "0xff00000000") == 0, NULL);
+	fail_unless(strcmp(s, "0xfe00") == 0, NULL);
 	integer_free(i);
 	free(s);
 }
@@ -490,8 +490,8 @@ Suite *integer_suite() {
 
 	// {{{ Private test case
 	TCase *tc_private = tcase_create("Private");
-	tcase_add_test(tc_private, test_integer_set_word);
-	tcase_add_test(tc_private, test_integer_new_from_word);
+	tcase_add_test(tc_private, test_integer_word);
+	tcase_add_test(tc_private, test_integer_new_word_power);
 	suite_add_tcase(s, tc_private);
 	// }}}
 	
